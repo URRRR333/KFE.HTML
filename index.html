@@ -34,6 +34,10 @@ html, body {
     --menu-bg-color: #000000;
     --menu-border-color: #383838;
     --menu-selection-color: rgba(78, 78, 78, 0.1);
+    --theme-primary: #c41e3a;
+    --theme-text: #ffffff;
+    --theme-accent: #ff4444;
+    --max-z: 2147483647;
 }
 
 #app {
@@ -71,7 +75,7 @@ html, body {
 
 /* Main container */
 .menu-container.svelte-11594kh {
-    position: absolute;
+    position: fixed;
     top: 30%;
     left: 2%;
     transform: translateY(-50%);
@@ -89,7 +93,8 @@ html, body {
                 0 20px 80px rgba(0, 0, 0, 0.97),
                 inset 0 0 30px rgba(196, 30, 58, 0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 999999;
+    z-index: var(--max-z, 2147483647);
+    pointer-events: auto;
 }
 /* Header Banner */
 .menu-header.svelte-11594kh {
@@ -119,6 +124,20 @@ html, body {
     border-radius: 10px 10px 0 0;
     filter: brightness(0.85) contrast(1.15) saturate(1.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Compact mode for menu (smaller footprint) */
+.menu-container.svelte-11594kh.compact {
+    width: 220px;
+    max-height: 30vh;
+}
+
+/* Compact description panel */
+.description-panel.svelte-11594kh.compact {
+    padding: 0.2vh 0.6vh;
+    font-size: 0.6vh;
+    min-width: 10vh;
+    max-width: 24vh;
 }
 
 
@@ -6037,7 +6056,7 @@ function Gt(t) {
 
 <!-- Color Picker Menu -->
 <div id="color-picker-container" class="color-picker-container">
-    <div class="color-picker-title">Color Settings</div>
+    <div class="color-picker-title">Color & Controls</div>
     
     <div class="color-presets" id="color-presets">
         <!-- سيتم ملؤها بـ JavaScript -->
@@ -6060,16 +6079,24 @@ function Gt(t) {
         <input type="color" id="color-accent" class="color-input" value="#00ffff">
         <div id="color-preview-accent" class="color-preview" style="background: #00ffff;"></div>
     </div>
+
+    <div class="color-input-group">
+        <span class="color-label">Z-index</span>
+        <input type="number" id="max-z-input" class="color-input" value="2147483647" min="0" max="2147483647">
+    </div>
     
     <div class="color-buttons">
         <button class="color-btn" id="apply-colors">Apply</button>
         <button class="color-btn secondary" id="reset-colors">Reset</button>
     </div>
 
-    <div class="color-buttons" style="margin-top: 14px; justify-content: flex-start; gap: 8px;">
+    <div class="color-buttons" style="margin-top: 10px; justify-content: flex-start; gap: 8px;">
+        <button class="color-btn" id="shrink-menu-btn" title="Compact menu">Shrink Menu</button>
+        <button class="color-btn" id="expand-menu-btn" title="Restore menu">Expand Menu</button>
+        <button class="color-btn" id="toggle-desc-btn" title="Toggle compact description">Toggle Description</button>
         <button class="color-btn" id="toggle-search-btn" style="background: linear-gradient(90deg, #c41e3a 0%, #8B0000 100%); border: 1px solid rgba(255,255,255,0.08);">تشغيل بحث القائمة</button>
     </div>
-</body>
+</div>
     <script>
         // دعم سحب وتحريك القائمة Drag & Move
         document.addEventListener('DOMContentLoaded', function() {
@@ -6220,24 +6247,26 @@ function Gt(t) {
                     const mainColor = document.getElementById('color-main').value;
                     const textColor = document.getElementById('color-text').value;
                     const accentColor = document.getElementById('color-accent').value;
-                    
-                    // تطبيث الألوان على جميع العناصر
-                    const style = document.createElement('style');
-                    style.textContent = `
-                        :root {
-                            --main-color: ${mainColor};
-                            --text-color: ${textColor};
-                            --accent-color: ${accentColor};
-                        }
-                        .menu-container.svelte-11594kh {
-                            border-color: ${mainColor} !important;
-                        }
-                        .menu-header.svelte-11594kh {
-                            border-color: ${mainColor} !important;
-                        }
-                    `;
-                    document.head.appendChild(style);
-                    console.log('Colors applied:', { mainColor, textColor, accentColor });
+                    const maxZInput = document.getElementById('max-z-input');
+                    const maxZ = maxZInput ? maxZInput.value : null;
+
+                    const root = document.documentElement;
+                    root.style.setProperty('--theme-primary', mainColor);
+                    root.style.setProperty('--theme-text', textColor);
+                    root.style.setProperty('--theme-accent', accentColor);
+
+                    if (maxZ) {
+                        root.style.setProperty('--max-z', String(maxZ));
+                        const menu = document.querySelector('.menu-container.svelte-11594kh');
+                        if (menu) menu.style.zIndex = maxZ;
+                    }
+
+                    const menuHeader = document.querySelector('.menu-header.svelte-11594kh');
+                    const menu = document.querySelector('.menu-container.svelte-11594kh');
+                    if (menuHeader) menuHeader.style.borderColor = mainColor;
+                    if (menu) menu.style.borderColor = mainColor;
+
+                    console.log('Colors applied:', { mainColor, textColor, accentColor, maxZ });
                 });
             }
 
@@ -6406,6 +6435,55 @@ window.addEventListener("message", function(e) {
     }
 })
 
+// FPS updater (real-time)
+(function(){
+    const fpsEl = document.getElementById('fps-counter');
+    if (!fpsEl) return;
+    let last = performance.now();
+    let frames = 0;
+    function tick(now){
+        frames++;
+        const delta = now - last;
+        if (delta >= 500) {
+            const fps = Math.round((frames / delta) * 1000);
+            frames = 0;
+            last = now;
+            fpsEl.textContent = `FPS: ${fps}`;
+        }
+        requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+})();
+
+// Menu / description controls and dynamic z-index
+document.addEventListener('DOMContentLoaded', function(){
+    const shrinkBtn = document.getElementById('shrink-menu-btn');
+    const expandBtn = document.getElementById('expand-menu-btn');
+    const toggleDesc = document.getElementById('toggle-desc-btn');
+    const maxZInput = document.getElementById('max-z-input');
+    const menu = document.querySelector('.menu-container.svelte-11594kh');
+    const desc = document.querySelector('.description-panel.svelte-11594kh');
+
+    if (shrinkBtn){
+        shrinkBtn.addEventListener('click', ()=>{ if (menu) menu.classList.add('compact'); });
+    }
+    if (expandBtn){
+        expandBtn.addEventListener('click', ()=>{ if (menu) menu.classList.remove('compact'); });
+    }
+    if (toggleDesc){
+        toggleDesc.addEventListener('click', ()=>{ if (desc) desc.classList.toggle('compact'); });
+    }
+    if (maxZInput){
+        // apply initial
+        if (menu) menu.style.zIndex = maxZInput.value;
+        maxZInput.addEventListener('change', (e)=>{
+            const val = String(e.target.value);
+            document.documentElement.style.setProperty('--max-z', val);
+            if (menu) menu.style.zIndex = val;
+        });
+    }
+});
+
         </script>
-        
+
 </html>
