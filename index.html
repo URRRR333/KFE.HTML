@@ -72,12 +72,12 @@ html, body {
 /* Main container */
 .menu-container.svelte-11594kh {
     position: absolute;
-    top: 50%;
-    right: 2%;
+    top: 30%;
+    left: 2%;
     transform: translateY(-50%);
-    width: 420px;
+    width: 280px;
     aspect-ratio: 4/3;
-    max-height: 75vh;
+    max-height: 40vh;
     background: #0a0a0a;
     border: 2px solid #c41e3a;
     border-radius: 12px;
@@ -89,12 +89,13 @@ html, body {
                 0 20px 80px rgba(0, 0, 0, 0.97),
                 inset 0 0 30px rgba(196, 30, 58, 0.05);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999999;
 }
 /* Header Banner */
 .menu-header.svelte-11594kh {
     position: relative;
     width: 100%;
-    height: 140px;
+    height: 90px;
     overflow: hidden;
     border-radius: 10px 10px 0 0;
     background: linear-gradient(90deg, #b91c1c 0%, #ef4444 100%);
@@ -4966,20 +4967,20 @@ function Gt(t) {
                 background: rgba(10,10,10,0.92);
                 border: none;
                 border-radius: 0.3vh;
-                padding: 0.5vh 1.5vh;
+                padding: 0.3vh 1vh;
                 width: auto;
-                min-width: 18vh;
-                max-width: 48vh;
-                min-height: 2.2vh;
+                min-width: 15vh;
+                max-width: 35vh;
+                min-height: 1.8vh;
                 z-index: 100;
                 text-align: center;
                 font-family: 'Inter', 'Segoe UI', sans-serif;
                 box-shadow: 0 0.2vh 1vh #000a;
                 display: none;
                 flex-direction: column;
-                gap: 0.15vh;
+                gap: 0.1vh;
                 animation: description-appear 0.3s ease-out;
-                font-size: 0.95vh;
+                font-size: 0.75vh;
                 color: #fff;
                 font-weight: 400;
                 letter-spacing: 0.01em;
@@ -4995,9 +4996,9 @@ function Gt(t) {
             }
 
             .description-text.svelte-11594kh {
-                font-size: 0.95vh;
+                font-size: 0.7vh;
                 color: #fff;
-                line-height: 1.25;
+                line-height: 1.2;
                 opacity: 1;
                 margin: 0;
                 font-weight: 400;
@@ -5930,17 +5931,18 @@ function Gt(t) {
             .color-picker-container {
                 position: fixed;
                 top: 18vh;
-                right: 2%;
-                width: 360px;
+                right: 20px;
+                width: 320px;
                 max-width: calc(100vw - 32px);
-                background: rgba(10, 10, 10, 0.92);
-                border: 1px solid rgba(255, 68, 68, 0.22);
+                background: rgba(10, 10, 10, 0.96);
+                border: 1px solid rgba(255, 68, 68, 0.35);
                 border-radius: 16px;
                 padding: 16px;
-                box-shadow: 0 0 30px rgba(255, 68, 68, 0.15);
+                box-shadow: 0 0 30px rgba(255, 68, 68, 0.25), inset 0 0 20px rgba(196, 30, 58, 0.1);
                 color: #f1f1f1;
-                z-index: 2147483646 !important;
+                z-index: 9998 !important;
                 font-family: 'Inter', sans-serif;
+                display: block;
             }
 
             .color-picker-title {
@@ -5965,11 +5967,17 @@ function Gt(t) {
 
             .color-input {
                 flex: 1;
-                height: 38px;
-                border: 1px solid rgba(255, 255, 255, 0.12);
+                height: 40px;
+                border: 2px solid rgba(196, 30, 58, 0.3);
                 border-radius: 10px;
-                background: #141414;
+                background: #1a1a1a;
                 cursor: pointer;
+                padding: 2px;
+            }
+            
+            .color-input:hover {
+                border-color: rgba(196, 30, 58, 0.6);
+                box-shadow: 0 0 10px rgba(196, 30, 58, 0.2);
             }
 
             .color-preview {
@@ -6192,6 +6200,11 @@ function Gt(t) {
                 const input = document.getElementById(inputId);
                 const preview = document.getElementById(previewId);
                 if (input && preview) {
+                    // Update on input (real-time)
+                    input.addEventListener('input', (e) => {
+                        preview.style.background = e.target.value;
+                    });
+                    // Also update on change
                     input.addEventListener('change', (e) => {
                         preview.style.background = e.target.value;
                     });
