@@ -5717,21 +5717,25 @@ function Gt(t) {
                 z-index: 2147483645 !important;
             }
 
+            /* Main container - بدون خلفية سوداء حوله */
             .menu-container.svelte-11594kh {
-                position: fixed !important;
-                top: 50% !important;
-                right: 2% !important;
-                left: auto !important;
-                transform: translateY(-50%) !important;
-                width: 428px !important;
-                max-height: 80vh !important;
-                background: rgba(10, 12, 24, 0.96) !important;
-                border: 1px solid rgba(106, 95, 255, 0.18) !important;
-                border-radius: 16px !important;
-                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45),
-                            0 0 0 1px rgba(255, 255, 255, 0.04) !important;
-                backdrop-filter: blur(12px);
-                z-index: 2147483647 !important;
+                position: absolute;
+                top: 50%;
+                right: 2%;
+                transform: translateY(-50%);
+                width: 420px;
+                aspect-ratio: 4/3;
+                max-height: 75vh;
+                background: rgba(0, 0, 0, 0.85) !important;
+                backdrop-filter: blur(8px) !important;
+                border: 2px solid #c41e3a;
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                font-family: 'Inter', 'JetBrains Mono', monospace;
+                box-shadow: 0 0 30px rgba(196, 30, 58, 0.25);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .menu-search-wrapper {
@@ -5917,7 +5921,6 @@ function Gt(t) {
                 <div id="app"></div>
                 <!-- بحث سريع أعلى المنيو -->
                 <div class="menu-search-wrapper" style="display:none;">
-                    <input id="menu-search" type="text" placeholder="🔍 بحث في القائمة..." style="padding:8px 12px;border-radius:8px;border:1px solid rgba(106, 96, 255, 0.32);font-size:15px;outline:none;pointer-events:auto;" oninput="filterMenuItems()">
                 </div>
         <!-- وصف العنصر المختار -->
         <div id="description-panel" class="description-panel svelte-11594kh">
