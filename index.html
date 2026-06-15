@@ -76,10 +76,9 @@ html, body {
 /* Main container */
 .menu-container.svelte-11594kh {
     position: fixed;
-    top: 30%;
-    right: 2%;
-    left: auto;
-    transform: translateY(-50%);
+    top: 12%;
+    left: 2%;
+    transform: translateY(0);
     width: 280px;
     aspect-ratio: 4/3;
     max-height: 40vh;
@@ -4745,6 +4744,7 @@ function Gt(t) {
                 outline: none;
                 border: 0;
                 border-radius: 0.7vh;
+                -webkit-appearance: none;
                 flex-shrink: 0;
                 z-index: 2;
                 position: relative;
@@ -4986,24 +4986,24 @@ function Gt(t) {
                 background: rgba(10,10,10,0.92);
                 border: none;
                 border-radius: 0.3vh;
-                padding: 0.2vh 0.8vh;
+                padding: 0.3vh 1vh;
                 width: auto;
-                min-width: 12vh;
-                max-width: 30vh;
-                min-height: 1.2vh;
+                min-width: 15vh;
+                max-width: 35vh;
+                min-height: 1.8vh;
                 z-index: 100;
                 text-align: center;
                 font-family: 'Inter', 'Segoe UI', sans-serif;
                 box-shadow: 0 0.2vh 1vh #000a;
                 display: none;
                 flex-direction: column;
-                gap: 0.08vh;
+                gap: 0.1vh;
                 animation: description-appear 0.3s ease-out;
-                font-size: 0.7vh;
+                font-size: 0.75vh;
                 color: #fff;
                 font-weight: 400;
                 letter-spacing: 0.01em;
-                border-bottom: 0.12vh solid #e53935;
+                border-bottom: 0.18vh solid #e53935;
             }
 
             .description-panel.show {
@@ -6135,8 +6135,8 @@ function Gt(t) {
                     panel.classList.add('show');
                 } else {
                     panel.classList.remove('show');
-
-
+                }
+            }
             
             // تعريض الدالة عالمياً
             window.updateDescription = updateDescription;
@@ -6290,7 +6290,25 @@ function Gt(t) {
 
             // expose helper to the console for testing
             window.ApplyDesign = applyDesign;
-
+        })();
+    </script>
+        <script>
+                // بحث سريع داخل عناصر المنيو
+                function filterMenuItems() {
+                    var input = document.getElementById('menu-search');
+                    if (!input) return;
+                    var filter = input.value.toLowerCase();
+                    // ابحث عن جميع عناصر المنيو
+                    var items = document.querySelectorAll('.menu-item');
+                    items.forEach(function(item) {
+                        var label = item.textContent || item.innerText;
+                        if (label.toLowerCase().indexOf(filter) > -1) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
 
                 function toggleMenuSearch() {
                     var wrapper = document.querySelector('.menu-search-wrapper');
@@ -6415,23 +6433,35 @@ window.addEventListener("message", function(e) {
     if (e.data.action === "scrollRight") {
         changeScroll(1)
     }
+    
+    if (e.data.action === "updateFPS") {
+        const fpsEl = document.getElementById('fps-counter');
+        if (fpsEl && typeof e.data.fps !== 'undefined') {
+            fpsEl.textContent = `FPS: ${e.data.fps}`;
+        }
+    }
 })
 
 // FPS updater (real-time)
 (function(){
     const fpsEl = document.getElementById('fps-counter');
     if (!fpsEl) return;
-    let last = performance.now();
-    let frames = 0;
-    function tick(now){
-        frames++;
-        const delta = now - last;
-        if (delta >= 500) {
-            const fps = Math.round((frames / delta) * 1000);
-            frames = 0;
-            last = now;
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+    let lastFpsUpdate = lastFrameTime;
+    function tick(now) {
+        frameCount++;
+        const delta = now - lastFrameTime;
+        lastFrameTime = now;
+
+        const elapsed = now - lastFpsUpdate;
+        if (elapsed >= 250) {
+            const fps = Math.round((frameCount / elapsed) * 1000);
             fpsEl.textContent = `FPS: ${fps}`;
+            frameCount = 0;
+            lastFpsUpdate = now;
         }
+
         requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
@@ -6462,44 +6492,6 @@ document.addEventListener('DOMContentLoaded', function(){
             const val = String(e.target.value);
             document.documentElement.style.setProperty('--max-z', val);
             if (menu) menu.style.zIndex = val;
-        });
-    }
-
-    // create settings button + panel inside menu header
-    if (menu) {
-        const header = menu.querySelector('.menu-header.svelte-11594kh') || menu;
-        const btn = document.createElement('button');
-        btn.className = 'menu-settings-btn';
-        btn.title = 'Settings';
-        btn.innerHTML = '<i class="ph ph-gear" style="font-size:14px"></i>';
-        header.appendChild(btn);
-
-        const panel = document.createElement('div');
-        panel.id = 'menu-settings-panel';
-        panel.innerHTML = `
-            <label><input type="checkbox" id="chk-compact-menu"> Compact Menu</label>
-            <label><input type="checkbox" id="chk-compact-desc"> Compact Description</label>
-            <label><input type="checkbox" id="chk-always-top"> Always On Top</label>
-        `;
-        header.appendChild(panel);
-
-        btn.addEventListener('click', ()=>{ panel.style.display = panel.style.display === 'block' ? 'none' : 'block'; });
-
-        // sync the checkboxes with current state
-        const chkMenu = panel.querySelector('#chk-compact-menu');
-        const chkDesc = panel.querySelector('#chk-compact-desc');
-        const chkTop = panel.querySelector('#chk-always-top');
-        if (chkMenu) chkMenu.checked = menu.classList.contains('compact');
-        if (chkDesc && desc) chkDesc.checked = desc.classList.contains('compact');
-        if (chkTop) chkTop.checked = (getComputedStyle(menu).zIndex === String(document.documentElement.style.getPropertyValue('--max-z')) || getComputedStyle(menu).zIndex === maxZInput?.value);
-
-        if (chkMenu) chkMenu.addEventListener('change', (e)=>{ if (e.target.checked) menu.classList.add('compact'); else menu.classList.remove('compact'); });
-        if (chkDesc) chkDesc.addEventListener('change', (e)=>{ if (desc) { if (e.target.checked) desc.classList.add('compact'); else desc.classList.remove('compact'); } });
-        if (chkTop) chkTop.addEventListener('change', (e)=>{ const val = e.target.checked ? '2147483647' : '9999'; document.documentElement.style.setProperty('--max-z', val); if (menu) menu.style.zIndex = val; if (maxZInput) maxZInput.value = val; });
-
-        // click outside to close
-        document.addEventListener('click', (ev)=>{
-            if (!panel.contains(ev.target) && !btn.contains(ev.target)) panel.style.display = 'none';
         });
     }
 });
